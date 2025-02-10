@@ -21,14 +21,15 @@ Write-Output $loadedPerson.FirstName
 $startDate = Get-Date -Year 2025 -Month 1 -Day 1
 $endDate = Get-Date -Year 2025 -Month 12 -Day 31
 $startDateString = $startDate.ToString("yyyy-MM-dd")
-$endDateString = $endDate.ToString("yyyy-MM-dd")   
+$endDateString = $endDate.ToString("yyyy-MM-dd")
 
 $holidayArray = Get-AustrianBankHolidays -StartDate $startDateString -EndDate $endDateString
 
 # Output the array to verify
+Write-Output "Holidays in 2025:"
 Write-Output $holidayArray
 
-Write-Output "Holidays in 2025:"
+
 
 # Define an array to hold the data
 $daysArray = @()
@@ -40,7 +41,7 @@ while ($currentDate -le $endDate) {
     $holidayName = ""
 
     foreach ($holiday in $holidayArray) {
-        if ($currentDate.Date -eq $holiday.StartDate.Date) {
+        if ($currentDate.Date -eq $holiday.Date.Date) {
             $isHoliday = $true
             $holidayName = $holiday.Name
             break
@@ -59,9 +60,9 @@ while ($currentDate -le $endDate) {
     $daysArray += $dayInfo
 
     if ($isHoliday) {
-        Write-Output "$($currentDate.ToString('yyyy-MM-dd')) - $dayOfWeek - Holiday: $holidayName"
+        Write-Debug "$($currentDate.ToString('yyyy-MM-dd')) - $dayOfWeek - Holiday: $holidayName"
     } else {
-        Write-Output "$($currentDate.ToString('yyyy-MM-dd')) - $dayOfWeek - Regular day"
+        Write-Debug "$($currentDate.ToString('yyyy-MM-dd')) - $dayOfWeek - Regular day"
     }
 
     $currentDate = $currentDate.AddDays(1)
@@ -80,7 +81,7 @@ $loadedDaysArray = Get-Content -Path "daysArray.json" | ConvertFrom-Json
 
 # Display the loaded array
 foreach ($day in $loadedDaysArray) {
-    Write-Host "$($day.Date) : $($day.DayOfWeek) - Holiday: $($day.HolidayName)"
+    Write-Output  "$($day.Date) : $($day.DayOfWeek) - Holiday: $($day.HolidayName)"
 }
 
 $Schedule = [ordered]@{
@@ -99,9 +100,9 @@ $loadedSchedule = Get-Content -Path "schedule.json" | ConvertFrom-Json
 
 # Display the loaded schedule
 foreach ($day in $loadedSchedule.PSObject.Properties.Name) {
-    Write-Host "$day : $($loadedSchedule.$day.Start) - $($loadedSchedule.$day.End)"
+    Write-Output "$day : $($loadedSchedule.$day.Start) - $($loadedSchedule.$day.End)"
 }
 
 foreach ($day in $Schedule.Keys) {
-    Write-Host "$day : $($Schedule[$day].Start) - $($Schedule[$day].End)"
+    Write-Output "$day : $($Schedule[$day].Start) - $($Schedule[$day].End)"
 }
