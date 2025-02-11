@@ -1,5 +1,5 @@
 # Load the functions and class to be tested
-. "./person.ps1"
+using module "./../Modules/person.psm1"
 
 Describe "Person Class" {
     Context "When creating a new Person object" {
@@ -10,33 +10,36 @@ Describe "Person Class" {
             $person.Age | Should -BeExactly 30
         }
     }
-}
 
-Describe "Save-PersonToFile" {
     Context "When saving a Person object to a file" {
         It "Should create a file with the correct JSON content" {
             $person = [Person]::new("Jane", "Doe", 25)
             $filePath = "$PSScriptRoot/test_person.json"
-            Save-PersonToFile -Person $person -FilePath $filePath
-
+            $person.SaveToFile($filePath)
+            
             $json = Get-Content -Path $filePath -Raw
-            $json | Should -Contain '"FirstName":"Jane"'
-            $json | Should -Contain '"LastName":"Doe"'
-            $json | Should -Contain '"Age":25'
+            $json | ConvertFrom-Json | ForEach-Object {
+                $_.FirstName | Should -BeExactly "Jane"
+                $_.LastName | Should -BeExactly "Doe"
+                $_.Age | Should -BeExactly 25
+            }
+            
+            $personAfterLoad = [Person]::LoadFromFile($filePath)
+            $personAfterLoad.FirstName | Should -BeExactly "Jane"
+            $personAfterLoad.LastName | Should -BeExactly "Doe" 
+            $personAfterLoad.Age | Should -BeExactly 25
 
             Remove-Item -Path $filePath
         }
     }
-}
 
-Describe "Load-PersonFromFile" {
     Context "When loading a Person object from a file" {
         It "Should correctly deserialize the JSON content" {
             $json = '{"FirstName":"Alice","LastName":"Smith","Age":28}'
             $filePath = "$PSScriptRoot/test_person.json"
             Set-Content -Path $filePath -Value $json
 
-            $person = Load-PersonFromFile -FilePath $filePath
+            $person = [Person]::LoadFromFile($filePath)
             $person.FirstName | Should -BeExactly "Alice"
             $person.LastName | Should -BeExactly "Smith"
             $person.Age | Should -BeExactly 28

@@ -1,0 +1,75 @@
+name: Validate
+on: push
+
+permissions:
+  checks: write
+  pull-requests: write
+
+jobs:
+  powershell-linter:
+    name: Run Linter
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install PSScriptAnalyzer module
+        shell: pwsh
+        run: |
+          Set-PSRepository PSGallery -InstallationPolicy Trusted
+          Install-Module PSScriptAnalyzer -ErrorAction Stop
+      - name: Lint with PSScriptAnalyzer
+        shell: pwsh
+        run: |
+          Invoke-ScriptAnalyzer -Path *.ps1 -Recurse -Outvariable issues
+          $errors   = $issues.Where({$_.Severity -eq 'Error'})
+          $warnings = $issues.Where({$_.Severity -eq 'Warning'})
+          if ($errors) {
+              Write-Error "There were $($errors.Count) errors and $($warnings.Count) warnings total."
+          } else {
+              Write-Output "There were $($errors.Count) errors and $($warnings.Count) warnings total."
+          }
+
+            if ($issues) {
+              # Format issues into a markdown table
+              $markdownTable = ""
+              $markdownTable += "| Severity | RuleName | ScriptName | Line | Message |`n"
+              $markdownTable += "|----------|----------|------------|------|---------|`n"
+
+              foreach ($issue in $issues) {
+                $markdownTable += "| $($issue.Severity) |$($issue.RuleName) | $($issue.ScriptName) |$($issue.Line) | $($issue.Message) |`n"
+              }
+
+              # Output the markdown table to the step summary
+              $markdownTable | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
+            }
+
+          # Fail the build if there are any errors in the script files
+          if ($errors) {
+              Write-Error "Errors found in script files."
+              exit 1
+          } else {
+              Write-Output "No errors found in script files."
+          }
+
+  pester-unit-tests:
+    name: Run Pester
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+      
+      - name: Perform a Pester Tests
+        if: always()
+        run: |
+          Invoke-Pester ./tests/*.ps1 -Passthru -OutputFile "./test-results/TestResults.xml" -OutputFormat NUnitXml
+          # don't fail on failed tests
+          exit 0
+
+      - name: Publish Results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: always()
+        with:
+          files: |
+            test-results/**/*.xml

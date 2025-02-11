@@ -1,9 +1,13 @@
 # this function retrieves Austrian bank holidays from openholidaysapi.org
 # and returns them as an array of objects
 
-# PSScriptAnalyzer rule suppression
-# pragma warning disable PSUseSingularNouns
+
+function Get-RestDateFormat {
+    return $restDateFormat
+}
 function Get-AustrianBankHolidays {
+    # PSScriptAnalyzer rule suppression because it returns an array of objects
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', 'Get-AustrianBankHolidays')]
     param (
         [Parameter(Mandatory=$true)]
         [string]$StartDate,
@@ -33,3 +37,7 @@ function Get-AustrianBankHolidays {
     }
     return $holidayArray
 }
+
+Set-Variable restDateFormat -Option Constant -Value "yyyy-MM-dd"
+Write-Output "Module bankholidays loaded"
+Write-Output "restDateFormat: $restDateFormat"
