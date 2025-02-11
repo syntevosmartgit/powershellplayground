@@ -1,13 +1,11 @@
 using module ./Modules/person.psm1
 using module ./Modules/bankholidays.psm1
+
 if (Test-Path -Path "./Modules/bankholidays.psm1") {
     Write-Debug "The module './Modules/bankholidays.psm1' could be found."
 } else {
     Write-Error "The module './Modules/bankholidays.psm1' could not be found."
 }
-
-
-
 
 # Example usage
 $person = [Person]::new("John", "Doe", 30)
@@ -26,7 +24,7 @@ $startDateString = $startDate.ToString($restDateFormat)
 $endDateString = $endDate.ToString($restDateFormat)
 
 Write-Output "Start date: $startDateString - End date: $endDateString with format: $restDateFormat"
-exit 
+
 $holidayArray = Get-AustrianBankHolidays -StartDate $startDateString -EndDate $endDateString
 
 # Output the array to verify
