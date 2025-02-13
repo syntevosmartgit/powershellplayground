@@ -18,15 +18,16 @@ if ($errors) {
     Write-Output "There were $($errors.Count) errors and $($warnings.Count) warnings total."
 }
 
-# Format issues into a markdown table
+# Convert the issues to a markdown table
 $markdownTable = @"
-| Severity | RuleName | ScriptName | Line | Message |
-|----------|------|------|------|---------|`n
+| Severity | Line | Message |
+|----------|------|---------|
 "@
 
 foreach ($issue in $issues) {
-    $markdownTable += "| $($issue.Severity) |$($issue.RuleName) | $($issue.ScriptName) |$($issue.Line) | $($issue.Message) |`n"
+    $markdownTable += "| $($issue.Severity) | $($issue.Line) | $($issue.Message) |`n"
 }
+
 
 # Output the markdown table to the step summary
 Write-Output $markdownTable
