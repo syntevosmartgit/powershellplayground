@@ -87,12 +87,13 @@ foreach ($day in $loadedDaysArray) {
     Write-Output  "$($day.Date) : $($day.DayOfWeek) - Holiday: $($day.HolidayName)"
 }
 
+# Define the weekly work schedule as an ordered hashtable
 $Schedule = [ordered]@{
-    Monday    = [PSCustomObject]@{ Start = "09:00 AM"; End = "05:00 PM" }
-    Tuesday   = [PSCustomObject]@{ Start = "09:00 AM"; End = "05:00 PM" }
-    Wednesday = [PSCustomObject]@{ Start = "09:00 AM"; End = "05:00 PM" }
-    Thursday  = [PSCustomObject]@{ Start = "09:00 AM"; End = "05:00 PM" }
-    Friday    = [PSCustomObject]@{ Start = "09:00 AM"; End = "04:00 PM" }
+    Monday    = [PSCustomObject]@{ Start = "09:00 AM"; End = "05:00 PM" }   # Standard workday for Monday
+    Tuesday   = [PSCustomObject]@{ Start = "09:00 AM"; End = "05:00 PM" }   # Standard workday for Tuesday
+    Wednesday = [PSCustomObject]@{ Start = "09:00 AM"; End = "05:00 PM" }   # Standard workday for Wednesday
+    Thursday  = [PSCustomObject]@{ Start = "09:00 AM"; End = "05:00 PM" }   # Standard workday for Thursday
+    Friday    = [PSCustomObject]@{ Start = "09:00 AM"; End = "04:00 PM" }   # Early finish on Friday
 }
 
 # Save the schedule to a JSON file
