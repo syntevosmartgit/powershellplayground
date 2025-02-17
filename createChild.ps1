@@ -102,10 +102,12 @@ $Schedule | ConvertTo-Json | Set-Content -Path "schedule.json"
 $loadedSchedule = Get-Content -Path "schedule.json" | ConvertFrom-Json
 
 # Display the loaded schedule
-foreach ($day in $loadedSchedule.PSObject.Properties.Name) {
-    Write-Output "$day : $($loadedSchedule.$day.Start) - $($loadedSchedule.$day.End)"
+Write-Output "Loaded Schedule:"
+$loadedSchedule.PSObject.Properties | ForEach-Object {
+    Write-Output "$($_.Name): $($_.Value.Start) - $($_.Value.End)"
 }
 
-foreach ($day in $Schedule.Keys) {
-    Write-Output "$day : $($Schedule[$day].Start) - $($Schedule[$day].End)"
+Write-Output "Original Schedule:"
+$Schedule.GetEnumerator() | ForEach-Object {
+    Write-Output "$($_.Key): $($_.Value.Start) - $($_.Value.End)"
 }
