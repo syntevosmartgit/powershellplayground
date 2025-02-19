@@ -85,41 +85,8 @@ while ($currentDate -le $endDate) {
     # Add the day's information to the array
     $daysArray += $dayInfo
 
-    # if ($isHoliday) {
-    #     Write-Debug "$($currentDate.ToString('yyyy-MM-dd')) - $dayOfWeek - Holiday: $holidayName"
-    # } else {
-    #     Write-Debug "$($currentDate.ToString('yyyy-MM-dd')) - $dayOfWeek - Regular day"
-    # }
-
     $currentDate = $currentDate.AddDays(1)
 }
-
-# # Output the array to verify
-# $daysArray | ForEach-Object {
-#     Write-Output "$($_.Date) - $($_.DayOfWeek) - Holiday: $($_.HolidayName)"
-# }
-
-# Save the array to a JSON file
-# $daysArray | ConvertTo-Json | Set-Content -Path "daysArray.json"
-
-# # Load the array from the JSON file
-# $loadedDaysArray = Get-Content -Path "daysArray.json" | ConvertFrom-Json
-
-# # Display the loaded array
-# foreach ($day in $loadedDaysArray) {
-#     Write-Output  "$($day.Date) : $($day.DayOfWeek) - Holiday: $($day.HolidayName)"
-# }
-
-
-
-# # Load the schedule from the JSON file
-# $loadedSchedule = Get-Content -Path "schedule.json" | ConvertFrom-Json
-
-# # Display the loaded schedule
-# Write-Output "Loaded Schedule:"
-# $loadedSchedule.PSObject.Properties | ForEach-Object {
-#     Write-Output "$($_.Name): $($_.Value.Start) - $($_.Value.End)"
-# }
 
 # Initialize an array to hold workdays
 $workdays = @()
@@ -158,25 +125,6 @@ while ($currentDate -le $endDate) {
     $currentDate = $currentDate.AddDays(1)
 }
 
-# # Output the workdays
-# Write-Output "Workdays (excluding holidays):"
-# $workdays | ForEach-Object {
-#     Write-Output "$($_.Date) - $($_.DayOfWeek): $($_.StartTime) - $($_.EndTime)"
-# }
-
-# Save the workdays to a JSON file
-#$workdays | ConvertTo-Json | Set-Content -Path "workdays.json"
-
-# Load the workdays from the JSON file
-#$loadedWorkdays = Get-Content -Path "workdays.json" | ConvertFrom-Json
-# $loadedWorkdays = $workdays
-
-# # Display the loaded workdays
-# Write-Output "Loaded Workdays:"
-# foreach ($workday in $loadedWorkdays) {
-#     Write-Output "$($workday.Date) - $($workday.DayOfWeek): $($workday.StartTime) - $($workday.EndTime)"
-# }
-
 # Group workdays by month and convert to JSON-friendly format
 $workdaysByMonthForJson = $workdays |
     Group-Object { (Get-Date $_.Date).ToString('yyyy-MM') } |
@@ -197,16 +145,3 @@ $workdaysByMonthForJson | ForEach-Object {
 
 # Save the workdays per month to a JSON file
 $workdaysByMonthForJson | ConvertTo-Json | Set-Content -Path "workdaysByMonth.json"
-
-# # Load the workdays per month from the JSON file
-# $loadedWorkdaysByMonth = $workdaysByMonthForJson
-
-# # Display the loaded workdays per month
-# Write-Output "Loaded Workdays per month:"
-# foreach ($month in $loadedWorkdaysByMonth) {
-#     Write-Output "Month: $($month.Name) - Count: $($month.Count)"
-# }
-
-
-
-
