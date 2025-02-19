@@ -40,7 +40,7 @@ $loadedPerson =[Person]::LoadFromFile("person.json")
 Write-Output $loadedPerson.FirstName
 
 
-exit 0
+
 
 $startDate = Get-Date -Year 2025 -Month 1 -Day 1
 $endDate = Get-Date -Year 2025 -Month 12 -Day 31
@@ -158,14 +158,14 @@ while ($currentDate -le $endDate) {
     $currentDate = $currentDate.AddDays(1)
 }
 
-# Output the workdays
-Write-Output "Workdays (excluding holidays):"
-$workdays | ForEach-Object {
-    Write-Output "$($_.Date) - $($_.DayOfWeek): $($_.StartTime) - $($_.EndTime)"
-}
+# # Output the workdays
+# Write-Output "Workdays (excluding holidays):"
+# $workdays | ForEach-Object {
+#     Write-Output "$($_.Date) - $($_.DayOfWeek): $($_.StartTime) - $($_.EndTime)"
+# }
 
 # Save the workdays to a JSON file
-$workdays | ConvertTo-Json | Set-Content -Path "workdays.json"
+#$workdays | ConvertTo-Json | Set-Content -Path "workdays.json"
 
 # Load the workdays from the JSON file
 #$loadedWorkdays = Get-Content -Path "workdays.json" | ConvertFrom-Json
@@ -177,22 +177,22 @@ $workdays | ConvertTo-Json | Set-Content -Path "workdays.json"
 #     Write-Output "$($workday.Date) - $($workday.DayOfWeek): $($workday.StartTime) - $($workday.EndTime)"
 # }
 
-# Group workdays by month
-$workdaysByMonth = $workdays | Group-Object { (Get-Date $_.Date).ToString('yyyy-MM') }
+# Group workdays by month and convert to JSON-friendly format
+$workdaysByMonthForJson = $workdays |
+    Group-Object { (Get-Date $_.Date).ToString('yyyy-MM') } |
+    ForEach-Object {
+        [PSCustomObject]@{
+            Month = $_.Name
+            Count = $_.Count
+            # Optionally include the group if needed, otherwise remove this line
+            # Group = $_.Group 
+        }
+    }
 
 # Output the workdays per month
 Write-Output "Workdays per month:"
-foreach ($month in $workdaysByMonth) {
-    Write-Output "Month: $($month.Name) - Count: $($month.Count)"
-}
-
-# Convert the grouped objects to a format suitable for JSON
-$workdaysByMonthForJson = $workdaysByMonth | ForEach-Object {
-    [PSCustomObject]@{
-        Month = $_.Name
-        Count = $_.Count
-        Group = $_.Group
-    }
+$workdaysByMonthForJson | ForEach-Object {
+    Write-Output "Month: $($_.Month) - Count: $($_.Count)"
 }
 
 # Save the workdays per month to a JSON file
