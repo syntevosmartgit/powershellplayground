@@ -14,9 +14,5 @@
   "Thursday": {
     "Start": "09:00 AM",
     "End": "05:00 PM"
-  },
-  "Friday": {
-    "Start": "09:00 AM",
-    "End": "04:00 PM"
   }
 }
