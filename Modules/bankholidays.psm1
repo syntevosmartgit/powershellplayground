@@ -26,6 +26,11 @@ function Get-AustrianBankHolidays {
         return
     }
 
+    # convert response to json
+    $json = ConvertTo-Json $response
+    Write-Debug $json
+    $json | Out-File -FilePath "holidays.json"
+
     $holidayArray = @()
     $response | ForEach-Object {
         $holidayObject = [PSCustomObject]@{
@@ -33,11 +38,9 @@ function Get-AustrianBankHolidays {
             Name      = $_.name.text
         }
         $holidayArray += $holidayObject
-        Write-Debug "$($_.Date) - $($_.name.text)"
+        Write-Debug "$($holidayObject.Date) - $($holidayObject.Name)"
     }
     return $holidayArray
 }
 
 Set-Variable restDateFormat -Option Constant -Value "yyyy-MM-dd"
-Write-Output "Module bankholidays loaded"
-Write-Output "restDateFormat: $restDateFormat"

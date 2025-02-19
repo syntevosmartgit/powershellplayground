@@ -1,49 +1,44 @@
 using module ./Modules/person.psm1
 using module ./Modules/bankholidays.psm1
 
+# Check if the execution directory is the script directory
+if ($PSScriptRoot -ne (Get-Location)) {
+    Write-Error "The execution directory is not the script directory. Please change to the script directory. $PSScriptRoot"
+    Exit 1
+}
+
+# verify that the modules can be loaded
 if (Test-Path -Path "./Modules/bankholidays.psm1") {
     Write-Debug "The module './Modules/bankholidays.psm1' could be found."
 } else {
     Write-Error "The module './Modules/bankholidays.psm1' could not be found."
+    Exit 1
 }
 
-# Example usage
-$person = [Person]::new("John", "Doe",2)
-
-# Define the weekly work schedule as an ordered hashtable
-$Schedule = [ordered]@{
-    Monday    = [PSCustomObject]@{ Start = "09:00 AM"; End = "05:00 PM" }   # Standard workday for Monday
-    Tuesday   = [PSCustomObject]@{ Start = "09:00 AM"; End = "05:00 PM" }   # Standard workday for Tuesday
-    Wednesday = [PSCustomObject]@{ Start = "09:00 AM"; End = "05:00 PM" }   # Standard workday for Wednesday
-    Thursday  = [PSCustomObject]@{ Start = "09:00 AM"; End = "05:00 PM" }   # Standard workday for Thursday
+if (Test-Path -Path "./Modules/person.psm1") {
+    Write-Debug "The module './Modules/person.psm1' could be found."
+} else {
+    Write-Error "The module './Modules/person.psm1' could not be found."
+    Exit 1
 }
-
-# Combine person and schedule into a single object
-$child = [PSCustomObject]@{
-    Person = $person
-    Schedule = $Schedule
-}
-
-# Output the combined object
-Write-Output $child
-
-# Save the combined object to a JSON file
-$combinedObject | ConvertTo-Json | Set-Content -Path "child.json"
-
-# Save the schedule to a JSON file
-$Schedule | ConvertTo-Json | Set-Content -Path "schedule.json"
-
-$person.SaveToFile("person.json")
-Write-Output "Person saved to file $person"
-
-$loadedPerson =[Person]::LoadFromFile("person.json")
-Write-Output $loadedPerson.FirstName
-
-
-
 
 $startDate = Get-Date -Year 2025 -Month 1 -Day 1
 $endDate = Get-Date -Year 2025 -Month 12 -Day 31
+
+# Combine person and schedule into a single object
+$child = [PSCustomObject]@{
+    Person = [Person]::new("John", "Doe",2)
+    Schedule = [ordered]@{
+        Monday    = [PSCustomObject]@{ Start = "09:00 AM"; End = "05:00 PM" }   # Standard workday for Monday
+        Tuesday   = [PSCustomObject]@{ Start = "09:00 AM"; End = "05:00 PM" }   # Standard workday for Tuesday
+        Wednesday = [PSCustomObject]@{ Start = "09:00 AM"; End = "05:00 PM" }   # Standard workday for Wednesday
+        Thursday  = [PSCustomObject]@{ Start = "09:00 AM"; End = "05:00 PM" }   # Standard workday for Thursday
+    }
+}
+
+# Save the combined object to a JSON file
+$child | ConvertTo-Json | Set-Content -Path "child.json"
+
 $restDateFormat = Get-RestDateFormat
 $startDateString = $startDate.ToString($restDateFormat)
 $endDateString = $endDate.ToString($restDateFormat)
@@ -52,10 +47,7 @@ Write-Output "Start date: $startDateString - End date: $endDateString with forma
 
 $holidayArray = Get-AustrianBankHolidays -StartDate $startDateString -EndDate $endDateString
 
-# Output the array to verify
-Write-Output "Holidays in 2025:"
-Write-Output $holidayArray
-
+Write-Output "Feiertage $($holidayArray.Count)"
 
 # Define an array to hold the data
 $daysArray = @()
@@ -109,13 +101,13 @@ while ($currentDate -le $endDate) {
     }
 
     # Check if the day is in the schedule and is not a holiday
-    if ($Schedule.Contains("$dayOfWeek") -and -not $isHoliday) {
+    if ($Child.Schedule.Contains("$dayOfWeek") -and -not $isHoliday) {
         # Create a custom object for the workday
         $workday = [PSCustomObject]@{
             Date      = $currentDate.ToString('yyyy-MM-dd')
             DayOfWeek = $dayOfWeek.ToString()
-            StartTime = $Schedule[$dayOfWeek.ToString()].Start
-            EndTime   = $Schedule[$dayOfWeek.ToString()].End
+            StartTime = $child.Schedule[$dayOfWeek.ToString()].Start
+            EndTime   = $child.Schedule[$dayOfWeek.ToString()].End
         }
         # Add the workday to the array
         $workdays += $workday
