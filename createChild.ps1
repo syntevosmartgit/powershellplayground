@@ -137,16 +137,3 @@ $workdaysByMonthForJson | ForEach-Object {
 
 # Save the workdays per month to a JSON file
 $workdaysByMonthForJson | ConvertTo-Json | Set-Content -Path "workdaysByMonth.json"
-
-# Convert workdaysByMonthForJson to markdown table format
-$markdownOutput = @("# Workdays per Month", "", "| Month | Workdays Count |", "|-------|----------------|")
-
-$workdaysByMonthForJson | ForEach-Object {
-    $markdownOutput += "| $($_.Month) | $($_.Count) |"
-}
-
-# Save the markdown output to a file
-$markdownOutput -join "`n" | Set-Content -Path "workdaysByMonth.md"
-
-# Output the markdown content to the console
-$markdownOutput -join "`n"
