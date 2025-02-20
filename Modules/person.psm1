@@ -10,7 +10,7 @@ class Person {
     }
 
     [void] SaveToFile([string]$filePath) {
-        $json = $this | ConvertTo-Json
+        $json = $this | ConvertTo-Json -Depth 3
         Set-Content -Path $filePath -Value $json
     }
 
@@ -19,5 +19,16 @@ class Person {
         return $json | ConvertFrom-Json -AsHashtable | ForEach-Object {
             [Person]::new($_.FirstName, $_.LastName, $_.Age)
         }
+    }
+}
+
+# Define the Child class
+class Child {
+    [Person]$Person
+    [hashtable]$Schedule
+
+    Child([Person]$person, [hashtable]$schedule) {
+        $this.Person = $person
+        $this.Schedule = $schedule
     }
 }

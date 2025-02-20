@@ -1,5 +1,6 @@
 using module ./Modules/person.psm1
 using module ./Modules/bankholidays.psm1
+using module ./Modules/workday.psm1
 
 # Check if the execution directory is the script directory
 if ($PSScriptRoot -ne (Get-Location)) {
@@ -22,22 +23,31 @@ if (Test-Path -Path "./Modules/person.psm1") {
     Exit 1
 }
 
+if (Test-Path -Path "./Modules/workday.psm1") {
+    Write-Debug "The module './Modules/workday.psm1' could be found."
+} else {
+    Write-Error "The module './Modules/workday.psm1' could not be found."
+    Exit 1
+}
+
 $startDate = Get-Date -Year 2025 -Month 1 -Day 1
 $endDate = Get-Date -Year 2025 -Month 12 -Day 31
 
-# Combine person and schedule into a single object
-$child = [PSCustomObject]@{
-    Person = [Person]::new("John", "Doe",2)
-    Schedule = [ordered]@{
+
+# Combine person and schedule into a single object using the Child class
+$child = [Child]::new(
+    [Person]::new("John", "Doe", 2),
+    [ordered]@{
         Monday    = [PSCustomObject]@{ Start = "09:00 AM"; End = "05:00 PM" }   # Standard workday for Monday
         Tuesday   = [PSCustomObject]@{ Start = "09:00 AM"; End = "05:00 PM" }   # Standard workday for Tuesday
         Wednesday = [PSCustomObject]@{ Start = "09:00 AM"; End = "05:00 PM" }   # Standard workday for Wednesday
         Thursday  = [PSCustomObject]@{ Start = "09:00 AM"; End = "05:00 PM" }   # Standard workday for Thursday
     }
-}
+)
 
+Write-Output "Child object created with name: $($child.Person.FirstName) $($child.Person.LastName)"
 # Save the combined object to a JSON file
-$child | ConvertTo-Json | Set-Content -Path "child.json"
+$child | ConvertTo-Json -Depth 3 | Set-Content -Path "child.json"
 
 $restDateFormat = Get-RestDateFormat
 $startDateString = $startDate.ToString($restDateFormat)
@@ -81,7 +91,7 @@ while ($currentDate -le $endDate) {
 }
 
 # Initialize an array to hold workdays
-$workdays = @()
+[Workday[]]$workdays = @()
 
 # Loop through each day in the year
 $currentDate = $startDate
@@ -102,13 +112,13 @@ while ($currentDate -le $endDate) {
 
     # Check if the day is in the schedule and is not a holiday
     if ($Child.Schedule.Contains("$dayOfWeek") -and -not $isHoliday) {
-        # Create a custom object for the workday
-        $workday = [PSCustomObject]@{
-            Date      = $currentDate.ToString('yyyy-MM-dd')
-            DayOfWeek = $dayOfWeek.ToString()
-            StartTime = $child.Schedule[$dayOfWeek.ToString()].Start
-            EndTime   = $child.Schedule[$dayOfWeek.ToString()].End
-        }
+        # Create a Workday object for the workday
+        $workday = [Workday]::new(
+            $currentDate.ToString('yyyy-MM-dd'),
+            $dayOfWeek.ToString(),
+            $child.Schedule[$dayOfWeek.ToString()].Start,
+            $child.Schedule[$dayOfWeek.ToString()].End
+        )
         # Add the workday to the array
         $workdays += $workday
     }
@@ -124,8 +134,6 @@ $workdaysByMonthForJson = $workdays |
         [PSCustomObject]@{
             Month = $_.Name
             Count = $_.Count
-            # Optionally include the group if needed, otherwise remove this line
-            # Group = $_.Group 
         }
     }
 

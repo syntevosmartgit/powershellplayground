@@ -1,10 +1,12 @@
 # this function retrieves Austrian bank holidays from openholidaysapi.org
 # and returns them as an array of objects
 
-
+# this function returns the date format used by the REST API
 function Get-RestDateFormat {
     return $restDateFormat
 }
+
+# this function retrieves Austrian bank holidays from openholidaysapi.org
 function Get-AustrianBankHolidays {
     # PSScriptAnalyzer rule suppression because it returns an array of objects
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', 'Get-AustrianBankHolidays')]
@@ -26,11 +28,6 @@ function Get-AustrianBankHolidays {
         return
     }
 
-    # convert response to json
-    $json = ConvertTo-Json $response
-    Write-Debug $json
-    $json | Out-File -FilePath "holidays.json"
-
     $holidayArray = @()
     $response | ForEach-Object {
         $holidayObject = [PSCustomObject]@{
@@ -43,4 +40,5 @@ function Get-AustrianBankHolidays {
     return $holidayArray
 }
 
+# define the date format used by the REST API as a constant
 Set-Variable restDateFormat -Option Constant -Value "yyyy-MM-dd"
