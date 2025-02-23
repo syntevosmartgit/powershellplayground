@@ -1,35 +1,14 @@
-using module ./Modules/person.psm1
-using module ./Modules/bankholidays.psm1
-using module ./Modules/workday.psm1
-
 # Check if the execution directory is the script directory
 if ($PSScriptRoot -ne (Get-Location)) {
     Write-Error "The execution directory is not the script directory. Please change to the script directory. $PSScriptRoot"
     Exit 1
 }
 
-# verify that the modules can be loaded
-if (Test-Path -Path "./Modules/bankholidays.psm1") {
-    Write-Debug "The module './Modules/bankholidays.psm1' could be found."
-} else {
-    Write-Error "The module './Modules/bankholidays.psm1' could not be found."
-    Exit 1
-}
+. ./Modules/person.ps1
+. ./Modules/bankholidays.ps1
+. ./Modules/workday.ps1
 
-if (Test-Path -Path "./Modules/person.psm1") {
-    Write-Debug "The module './Modules/person.psm1' could be found."
-} else {
-    Write-Error "The module './Modules/person.psm1' could not be found."
-    Exit 1
-}
-
-if (Test-Path -Path "./Modules/workday.psm1") {
-    Write-Debug "The module './Modules/workday.psm1' could be found."
-} else {
-    Write-Error "The module './Modules/workday.psm1' could not be found."
-    Exit 1
-}
-
+# Define the start and end dates for the year
 $startDate = Get-Date -Year 2025 -Month 1 -Day 1
 $endDate = Get-Date -Year 2025 -Month 12 -Day 31
 

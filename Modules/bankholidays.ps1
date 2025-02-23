@@ -3,7 +3,17 @@
 
 # this function returns the date format used by the REST API
 function Get-RestDateFormat {
-    return $restDateFormat
+    return "yyyy-MM-dd"
+}
+
+class HoliDayClass {
+    [datetime]$Date
+    [string]$Name
+
+    HoliDayClass([datetime]$Date, [string]$Name) {
+        $this.Date = $Date
+        $this.Name = $Name
+    }
 }
 
 # this function retrieves Austrian bank holidays from openholidaysapi.org
@@ -20,7 +30,7 @@ function Get-AustrianBankHolidays {
 
     Write-Output "Getting Austrian bank holidays from $StartDate to $EndDate from openholidaysapi.org"
     $url = "https://openholidaysapi.org/PublicHolidays?countryIsoCode=AT&languageIsoCode=DE&validFrom=$StartDate&validTo=$EndDate"
-    Write-Debug $url
+    Write-Output $url
     try {
         $response = Invoke-RestMethod -Uri $url -Method Get
     } catch {
@@ -28,17 +38,16 @@ function Get-AustrianBankHolidays {
         return
     }
 
+    $dateFormat = Get-RestDateFormat
     $holidayArray = @()
     $response | ForEach-Object {
-        $holidayObject = [PSCustomObject]@{
-            Date = [DateTime]::ParseExact($_.startDate, "yyyy-MM-dd", $null)
-            Name      = $_.name.text
+
+        $holidayObject = [HoliDayClass]::new([DateTime]::ParseExact($_.startDate, $dateFormat, $null), [string]$_.name.text)
+        
+            $holidayArray += $holidayObject
+            Write-Debug "$($holidayObject.Date) - $($holidayObject.Name)"
         }
-        $holidayArray += $holidayObject
-        Write-Debug "$($holidayObject.Date) - $($holidayObject.Name)"
-    }
+    
     return $holidayArray
 }
 
-# define the date format used by the REST API as a constant
-Set-Variable restDateFormat -Option Constant -Value "yyyy-MM-dd"
