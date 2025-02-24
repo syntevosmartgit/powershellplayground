@@ -1,3 +1,5 @@
+# Define the Person class
+# This class represents a person with properties for first name, last name, and age.
 class Person {
     [string]$FirstName
     [string]$LastName
@@ -23,6 +25,7 @@ class Person {
 }
 
 # Define the Child class
+# This class represents a child with properties for person and schedule.
 class Child {
     [Person]$Person
     [hashtable]$Schedule

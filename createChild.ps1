@@ -41,33 +41,8 @@ Write-Output "Feiertage $($holidayArray.Count)"
 # Define an array to hold the data
 $daysArray = @()
 
-# Get all days of 2025
-$currentDate = $startDate
-while ($currentDate -le $endDate) {
-    $isHoliday = $false
-    $holidayName = ""
-
-    foreach ($holiday in $holidayArray) {
-        if ($currentDate.Date -eq $holiday.Date.Date) {
-            $isHoliday = $true
-            $holidayName = $holiday.Name
-            break
-        }
-    }
-
-    $dayOfWeek = $currentDate.DayOfWeek
-    $dayInfo = @{
-        Date = $currentDate.ToString('yyyy-MM-dd')
-        DayOfWeek = $dayOfWeek
-        IsHoliday = $isHoliday
-        HolidayName = $holidayName
-    }
-
-    # Add the day's information to the array
-    $daysArray += $dayInfo
-
-    $currentDate = $currentDate.AddDays(1)
-}
+# Call the function to get the days information
+$daysArray = Get-DaysInfo -startDate $startDate -endDate $endDate -holidayArray $holidayArray
 
 # Initialize an array to hold workdays
 [Workday[]]$workdays = @()
