@@ -1,5 +1,3 @@
-# this is a demo file
-
 # Show-SortedPaths function
 # This script sorts the system PATH variable and displays it in color-coded format.
 function Show-SortedPaths {
@@ -17,11 +15,8 @@ function Show-SortedPaths {
     }
 }
 
-Show-SortedPaths
-
-# Define the new path to be added
-$newPath = 'C:\repos\'
-
+# Set-Path function
+# This function sets a new path variable to the specified path.
 function Set-Path {
     param (
         [string]$newPath
@@ -32,8 +27,3 @@ function Set-Path {
         $env:Path += ";$newPath"
     }
 }
-
-# Call the Set-Path function with the new path
-Set-Path -newPath 'C:\repos\'
-
-Show-SortedPaths
