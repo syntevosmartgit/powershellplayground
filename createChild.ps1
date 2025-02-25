@@ -1,8 +1,19 @@
+# This script creates a child process and includes necessary modules for person, bank holidays, and workday functionalities.
+# 
+# Modules:
+# - person.ps1: Contains functions and definitions related to person entities.
+# - bankholidays.ps1: Provides functions to handle bank holidays.
+# - workday.ps1: Includes functions to manage workday calculations and operations.
+# Usage:
+# 1. Ensure the script is executed in the correct directory.    
+# 2. Run the script to create a child object and calculate workdays for the year 2025.
+
 # Check if the execution directory is the script directory
 if ($PSScriptRoot -ne (Get-Location)) {
     Write-Error "The execution directory is not the script directory. Please change to the script directory. $PSScriptRoot"
     Exit 1
 }
+
 
 . ./Modules/person.ps1
 . ./Modules/bankholidays.ps1
