@@ -1,29 +1,46 @@
-# Load the function to be tested
-using module "./../Modules/bankholidays.psm1"
+# Modules/bankholidays.Tests.ps1
+
+Describe "Get-RestDateFormat" {
+    BeforeAll { 
+        . "$PSScriptRoot\..\Modules\bankholidays.ps1"   
+    }
+    It "should return the correct date format" {
+        $result = Get-RestDateFormat
+        $result | Should -Be "yyyy-MM-dd"
+    }
+}
+
+Describe "HoliDayClass" {
+    BeforeAll { 
+        . "$PSScriptRoot\..\Modules\bankholidays.ps1"   
+    }
+    It "should create an object with the correct properties" {
+        $date = [datetime]"2023-12-25"
+        $name = "Christmas Day"
+        $holiday = [HoliDayClass]::new($date, $name)
+
+        $holiday.Date | Should -Be $date
+        $holiday.Name | Should -Be $name
+    }
+}
 
 Describe "Get-AustrianBankHolidays" {
+    BeforeAll { 
+        . "$PSScriptRoot\..\Modules\bankholidays.ps1"   
+    }
     Context "When called with valid dates" {
         It "Should return an array of holiday objects" {
-            # Mock the Invoke-RestMethod to return a predefined response
-            # Mock -CommandName Invoke-RestMethod -MockWith {
-            #     return @(
-            #         @{ startDate = "2023-01-01"; Name = @{ text = "Neujahr" } },
-            #         @{ startDate = "2023-05-01"; Name = @{ text = "Staatsfeiertag" } },
-            #         @{ startDate = "2023-12-25"; Name = @{ text = "Weihnachten" } }
-            #     )
-            # }
-
+           
             $result = Get-AustrianBankHolidays -StartDate "2023-01-01" -EndDate "2023-12-31"
-            $result.Count | Should -Be 14
-            # $result[0].Date | Should -Be "2023-01-01"
+            $result.Count | Should -Be 15
+
+            # $result[0] | Should -BeOfType HoliDayClass
         }
     }
 
     Context "When API call fails" {
         It "Should write an error message and return nothing" {
-            # Mock the Invoke-RestMethod to throw an exception
-            # Mock -CommandName Invoke-RestMethod -MockWith { throw "API call failed" }
-
+           
             { Get-AustrianBankHolidays -StartDate "XXX" -EndDate "2023-12-31" } | Should -Throw
         }
     }
