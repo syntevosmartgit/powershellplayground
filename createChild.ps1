@@ -14,28 +14,34 @@ if ($PSScriptRoot -ne (Get-Location)) {
     Exit 1
 }
 
-
 . ./Modules/person.ps1
 . ./Modules/bankholidays.ps1
 . ./Modules/workday.ps1
+. ./Modules/CostWindow.ps1
+. ./Modules/workdaycost.ps1
 
 # Define the start and end dates for the year
 $startDate = Get-Date -Year 2025 -Month 1 -Day 1
 $endDate = Get-Date -Year 2025 -Month 12 -Day 31
 
+#define the rates
+$morningRate = 6
+$afternoonRate = 5
+$morningGovSubsidy = 4.5
+$afternoonGovSubsidy = 0
 
 # Combine person and schedule into a single object using the Child class
 $child = [Child]::new(
-    [Person]::new("John", "Doe", 2),
+    [Person]::new("Daniel", "Siegl", $morningRate, $morningGovSubsidy, $afternoonRate, $afternoonGovSubsidy),   # Person object with hourly rates
     [ordered]@{
-        Monday    = [PSCustomObject]@{ Start = "09:00 AM"; End = "05:00 PM" }   # Standard workday for Monday
-        Tuesday   = [PSCustomObject]@{ Start = "09:00 AM"; End = "05:00 PM" }   # Standard workday for Tuesday
-        Wednesday = [PSCustomObject]@{ Start = "09:00 AM"; End = "05:00 PM" }   # Standard workday for Wednesday
-        Thursday  = [PSCustomObject]@{ Start = "09:00 AM"; End = "05:00 PM" }   # Standard workday for Thursday
+        Monday    = [PSCustomObject]@{ Start = "08:00 AM"; End = "03:00 PM" }   # Standard workday for Monday
+        Tuesday   = [PSCustomObject]@{ Start = "08:00 AM"; End = "03:00 PM" }   # Standard workday for Tuesday
+        Wednesday = [PSCustomObject]@{ Start = "08:00 AM"; End = "03:00 PM" }   # Standard workday for Wednesday
+        Thursday  = [PSCustomObject]@{ Start = "08:00 AM"; End = "03:00 PM" }   # Standard workday for Thursday
     }
 )
 
-Write-Output "Child object created with name: $($child.Person.FirstName) $($child.Person.LastName)"
+Write-Output "Child: $($child.Person.FirstName) $($child.Person.LastName)"
 # Save the combined object to a JSON file
 $child | ConvertTo-Json -Depth 3 | Set-Content -Path "child.json"
 
@@ -43,48 +49,11 @@ $restDateFormat = Get-RestDateFormat
 $startDateString = $startDate.ToString($restDateFormat)
 $endDateString = $endDate.ToString($restDateFormat)
 
-Write-Output "Start date: $startDateString - End date: $endDateString with format: $restDateFormat"
-
 $holidayArray = Get-AustrianBankHolidays -StartDate $startDateString -EndDate $endDateString
+Write-Output "Start date: $startDateString - End date: $endDateString - Feiertage: $($holidayArray.Count)"
 
-Write-Output "Feiertage $($holidayArray.Count)"
-
-# Initialize an array to hold workdays
-[Workday[]]$workdays = @()
-
-# Loop through each day in the year
-$currentDate = $startDate
-while ($currentDate -le $endDate) {
-    # Get the day of the week
-    $dayOfWeek = $currentDate.DayOfWeek
-
-    # Check if the current day is a holiday
-    $isHoliday = $false
-
-    foreach ($holiday in $holidayArray) {
-        if ($currentDate.Date -eq $holiday.Date.Date) {
-            $isHoliday = $true
-            $holidayName = $holiday.Name
-            break
-        }
-    }
-
-    # Check if the day is in the schedule and is not a holiday
-    if ($Child.Schedule.Contains("$dayOfWeek") -and -not $isHoliday) {
-        # Create a Workday object for the workday
-        $workday = [Workday]::new(
-            $currentDate.ToString('yyyy-MM-dd'),
-            $dayOfWeek.ToString(),
-            $child.Schedule[$dayOfWeek.ToString()].Start,
-            $child.Schedule[$dayOfWeek.ToString()].End
-        )
-        # Add the workday to the array
-        $workdays += $workday
-    }
-
-    # Move to the next day
-    $currentDate = $currentDate.AddDays(1)
-}
+# Call the function to get workdays
+$workdays = Get-Workdays-with-Cost-per-Child -startDate $startDate -endDate $endDate -holidayArray $holidayArray -child $child -morningRate $morningRate -afternoonRate $afternoonRate -morningGovSubsidy $morningGovSubsidy -afternoonGovSubsidy $afternoonGovSubsidy
 
 # Group workdays by month and convert to JSON-friendly format
 $workdaysByMonthForJson = $workdays |
@@ -93,13 +62,15 @@ $workdaysByMonthForJson = $workdays |
         [PSCustomObject]@{
             Month = $_.Name
             Count = $_.Count
+            TotalCost = ($_.Group | Measure-Object -Property TotalCost -Sum).Sum
+            TotalSubsidy = ($_.Group | Measure-Object -Property TotalSubsidy -Sum).Sum
         }
     }
 
 # Output the workdays per month
 Write-Output "Workdays per month:"
 $workdaysByMonthForJson | ForEach-Object {
-    Write-Output "Month: $($_.Month) - Count: $($_.Count)"
+    Write-Output ("Month: {0} - Count: {1} - TotalCost: €{2:F2} - TotalSubsidy: €{3:F2}" -f $_.Month, $_.Count, $_.TotalCost, $_.TotalSubsidy)
 }
 
 # Save the workdays per month to a JSON file
